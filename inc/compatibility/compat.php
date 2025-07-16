@@ -98,7 +98,7 @@ if ( ! function_exists( '_is_utf8_charset' ) ) {
 	}
 }
 
-if ( ! function_exists( 'mb_substr' ) ) :
+if ( ! function_exists( 'mb_substr' ) ) {
 	/**
 	 * Compat function to mimic mb_substr().
 	 *
@@ -117,7 +117,7 @@ if ( ! function_exists( 'mb_substr' ) ) :
 	function mb_substr( $string, $start, $length = null, $encoding = null ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound
 		return _mb_substr( $string, $start, $length, $encoding );
 	}
-endif;
+}
 
 // If _mb_substr already loaded.
 if ( ! function_exists( '_mb_substr' ) ) {
@@ -174,11 +174,11 @@ if ( ! function_exists( '_mb_substr' ) ) {
 		| \xF4[\x80-\x8F][\x80-\xBF]{2}
 	)/x';
 
-	// Start with 1 element instead of 0 since the first thing we do is pop.
-	$chars = array( '' );
+		// Start with 1 element instead of 0 since the first thing we do is pop.
+		$chars = [ '' ];
 
-	do {
-		// We had some string left over from the last round, but we counted it in that last round.
+		do {
+			// We had some string left over from the last round, but we counted it in that last round.
 			array_pop( $chars );
 
 			/*
@@ -190,13 +190,13 @@ if ( ! function_exists( '_mb_substr' ) ) {
 			$chars = array_merge( $chars, $pieces );
 
 			// If there's anything left over, repeat the loop.
-		} while ( count( $pieces ) > 1 && $str = array_pop( $pieces ) );
+		} while ( count( $pieces ) > 1 && $str = array_pop( $pieces ) ); // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
 
 		return implode( '', array_slice( $chars, $start, $length ) );
 	}
 }
 
-if ( ! function_exists( 'mb_strlen' ) ) :
+if ( ! function_exists( 'mb_strlen' ) ) {
 	/**
 	 * Compat function to mimic mb_strlen().
 	 *
@@ -212,7 +212,7 @@ if ( ! function_exists( 'mb_strlen' ) ) :
 	function mb_strlen( $string, $encoding = null ) { // phpcs:ignore Universal.NamingConventions.NoReservedKeywordParameterNames.stringFound
 		return _mb_strlen( $string, $encoding );
 	}
-endif;
+}
 
 // If _mb_strlen is already loaded.
 if ( ! function_exists( '_mb_strlen' ) ) {
@@ -278,7 +278,7 @@ if ( ! function_exists( '_mb_strlen' ) ) {
 			$count += count( $pieces );
 
 			// If there's anything left over, repeat the loop.
-		} while ( $str = array_pop( $pieces ) );
+		} while ( $str = array_pop( $pieces ) ); // phpcs:ignore WordPress.CodeAnalysis.AssignmentInCondition.FoundInWhileCondition
 
 		// Fencepost: preg_split() always returns one extra item in the array.
 		return --$count;
@@ -375,7 +375,7 @@ if ( ! function_exists( 'array_is_list' ) ) {
 	 * @return bool True if array is a list, false otherwise.
 	 */
 	function array_is_list( $arr ) {
-		if ( ( array() === $arr ) || ( array_values( $arr ) === $arr ) ) {
+		if ( ( [] === $arr ) || ( array_values( $arr ) === $arr ) ) {
 			return true;
 		}
 
