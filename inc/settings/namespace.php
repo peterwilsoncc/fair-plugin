@@ -8,7 +8,6 @@
 namespace FAIR\Settings;
 
 use const FAIR\Avatars\AVATAR_SRC_SETTING_KEY;
-/* phpcs:disable Squiz.PHP.EmbeddedPhp.ContentBeforeOpen, Squiz.PHP.EmbeddedPhp.ContentAfterOpen, Squiz.PHP.EmbeddedPhp.ContentBeforeEnd */
 
 /**
  * Bootstrap.
@@ -89,9 +88,9 @@ function save_multisite_avatar_settings() {
  *
  * @param  array $args  The args passed from the `add_settings_field` call or our own.
  *
- * @return HTML
+ * @return void
  */
-function site_avatar_source_field( $args ) {
+function site_avatar_source_field( $args ) : void {
 
 	// The rest of the table markup is there, so begin with the select.
 	echo '<select id="' . esc_attr( $args['field_id'] ) . '" name="' . esc_attr( $args['field_name'] ) . '" aria-describedby="fair-avatar-source-description">';
