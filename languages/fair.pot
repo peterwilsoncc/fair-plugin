@@ -3,13 +3,13 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: FAIR - Federated and Independent Repositories 0.4.1\n"
-"Report-Msgid-Bugs-To: https://github.com/fairpm/fair-plugin/issues\n"
+"Report-Msgid-Bugs-To: https://github.com/peterwilsoncc/fair-plugin/issues\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"POT-Creation-Date: 2025-08-17T01:17:00+00:00\n"
+"POT-Creation-Date: 2025-09-08T22:13:09+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.12.0\n"
 "X-Domain: fair\n"
@@ -63,32 +63,32 @@ msgstr ""
 msgid "No credits could be found."
 msgstr ""
 
-#: inc/dashboard-widgets/namespace.php:100
+#: inc/dashboard-widgets/namespace.php:105
 msgid "Unable to fetch events (parse error)."
 msgstr ""
 
-#: inc/dashboard-widgets/namespace.php:107
+#: inc/dashboard-widgets/namespace.php:112
 msgctxt "default event location"
 msgid "Online"
 msgstr ""
 
 #. translators: If a Rosetta site exists (e.g. https://es.fair.pm/news/), then use that. Otherwise, leave untranslated.
-#: inc/dashboard-widgets/namespace.php:184
+#: inc/dashboard-widgets/namespace.php:189
 msgctxt "Events and News dashboard widget"
 msgid "https://fair.pm/"
 msgstr ""
 
-#: inc/dashboard-widgets/namespace.php:185
+#: inc/dashboard-widgets/namespace.php:190
 msgid "News"
 msgstr ""
 
 #. translators: Hidden accessibility text.
-#: inc/dashboard-widgets/namespace.php:187
-#: inc/dashboard-widgets/namespace.php:199
+#: inc/dashboard-widgets/namespace.php:192
+#: inc/dashboard-widgets/namespace.php:204
 msgid "(opens in a new tab)"
 msgstr ""
 
-#: inc/dashboard-widgets/namespace.php:197
+#: inc/dashboard-widgets/namespace.php:202
 msgid "Events (by The WP World)"
 msgstr ""
 
@@ -273,15 +273,15 @@ msgstr ""
 msgid "Fetched metadata does not match the requested DID."
 msgstr ""
 
-#: inc/packages/namespace.php:160
+#: inc/packages/namespace.php:166
 msgid "HTTP error code received"
 msgstr ""
 
-#: inc/packages/namespace.php:202
+#: inc/packages/namespace.php:238
 msgid "DID does not contain valid signing keys."
 msgstr ""
 
-#: inc/packages/namespace.php:212
+#: inc/packages/namespace.php:248
 msgid "No releases found in the repository."
 msgstr ""
 
