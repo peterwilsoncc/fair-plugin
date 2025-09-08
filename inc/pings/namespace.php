@@ -109,51 +109,18 @@ function handle_key_file_request() {
  * @param WP_Post $post       Post object.
  */
 function ping_indexnow( $new_status, $old_status, $post ) : void {
-	/*
-	 * Skip if post type isn't viewable.
-	 *
-	 * The post type shouldn't change under normal circumstances,
-	 * so it's safe to assume that both the old and new post are
-	 * not viewable.
-	 */
-	if ( ! is_post_type_viewable( $post->post_type ) ) {
+	// Only ping for published posts.
+	if ( 'publish' !== $new_status ) {
 		return;
 	}
 
-	/*
-	 * Skip for revisions and autosaves.
-	 *
-	 * The IndexNow ping for revisions will be handled by the
-	 * parent post's transition_post_status hook.
-	 */
+	// Skip revisions and autosaves.
 	if ( wp_is_post_revision( $post ) || wp_is_post_autosave( $post ) ) {
 		return;
 	}
 
-	/*
-	 * Skip if both old and new statuses are private.
-	 *
-	 * The page will have been a 404 before and after.
-	 *
-	 * For pages that are newly a 404, still ping IndexNow
-	 * to encourage removal of the URL from search engines.
-	 */
-	if (
-		! is_post_status_viewable( $new_status )
-		&& ! is_post_status_viewable( $old_status )
-	) {
-		return;
-	}
-
-	/*
-	 * Prevent double pings for block editor legacy meta boxes.
-	 */
-	if (
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended
-		isset( $_GET['meta-box-loader'] )
-		// phpcs:ignore WordPress.Security.NonceVerification.Recommended, WordPress.PHP.StrictComparisons.LooseComparison -- form input.
-		&& '1' == $_GET['meta-box-loader']
-	) {
+	// Skip non-public post types.
+	if ( ! is_post_type_viewable( $post->post_type ) ) {
 		return;
 	}
 
