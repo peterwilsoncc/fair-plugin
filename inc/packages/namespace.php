@@ -19,6 +19,7 @@ use WP_Upgrader;
 const CACHE_KEY = CACHE_BASE . 'packages-';
 const CACHE_METADATA_DOCUMENTS = CACHE_BASE . 'metadata-documents-';
 const CACHE_RELEASE_PACKAGES = CACHE_BASE . 'release-packages';
+const CACHE_DID_FOR_INSTALL = 'fair-install-did';
 const CONTENT_TYPE = 'application/json+fair';
 const SERVICE_ID = 'FairPackageManagementRepo';
 
@@ -31,6 +32,7 @@ const SERVICE_ID = 'FairPackageManagementRepo';
  */
 function bootstrap() {
 	Admin\bootstrap();
+	WP_CLI\bootstrap();
 }
 
 /**
@@ -632,8 +634,43 @@ function get_update_data( $did ) {
  */
 function upgrader_pre_download( $false ) : bool {
 	add_filter( 'http_request_args', 'FAIR\\Packages\\maybe_add_accept_header', 20, 2 );
-	add_filter( 'upgrader_source_selection', __NAMESPACE__ . '\\rename_source_selection', 10, 3 );
+	add_filter( 'upgrader_source_selection', __NAMESPACE__ . '\\rename_source_selection', 11, 3 );
 	return $false;
+}
+
+/**
+ * Cache the DID before install.
+ *
+ * @param array $options Upgrader package options.
+ * @return array The same options.
+ */
+function cache_did_for_install( array $options ): array {
+	$releases = get_transient( CACHE_RELEASE_PACKAGES ) ?: [];
+
+	if ( ! empty( $releases ) ) {
+		$did = array_find_key(
+			$releases,
+			function ( $release ) use ( $options ) {
+				$artifact = pick_artifact_by_lang( $release->artifacts->package );
+				return $artifact && $artifact->url === $options['package'];
+			}
+		);
+
+		if ( $did ) {
+			set_transient( CACHE_DID_FOR_INSTALL, $did );
+		}
+	}
+
+	return $options;
+}
+
+/**
+ * Delete cached DID after install.
+ *
+ * @return void
+ */
+function delete_cached_did_for_install(): void {
+	delete_transient( CACHE_DID_FOR_INSTALL );
 }
 
 /**
@@ -650,7 +687,7 @@ function upgrader_pre_download( $false ) : bool {
 function rename_source_selection( string $source, string $remote_source, WP_Upgrader $upgrader ) {
 	global $wp_filesystem;
 
-	$did = get_transient( Admin\ACTION_INSTALL_DID );
+	$did = get_transient( CACHE_DID_FOR_INSTALL );
 
 	if ( ! $did ) {
 		return $source;
@@ -835,6 +872,98 @@ function fetch_and_validate_package_alias( DIDDocument $did ) {
 
 	// Validated, so return the valid domain.
 	return $domain;
+}
+
+/**
+ * Enable searching by DID.
+ *
+ * @param mixed  $result The result of the plugins_api call.
+ * @param string $action The action being performed.
+ * @param stdClass $args The arguments passed to the plugins_api call.
+ * @return mixed The search result for the DID.
+ */
+function search_by_did( $result, $action, $args ) {
+	if ( 'query_plugins' !== $action || empty( $args->search ) ) {
+		return $result;
+	}
+
+	// The DID comes from a URL-encoded request parameter, and must be decoded first.
+	$did = sanitize_text_field( urldecode( $args->search ) );
+	if ( ! str_starts_with( $did, 'did:plc:' ) || strlen( $did ) !== 32 ) {
+		return $result;
+	}
+
+	$api_data = get_api_data( $did );
+	if ( is_wp_error( $api_data ) ) {
+		return $result;
+	}
+
+	$result = [
+		'plugins' => [ $api_data ],
+		'info' => [
+			'page' => 1,
+			'pages' => 1,
+			'results' => 1,
+			'total' => 1,
+		],
+	];
+
+	return (object) $result;
+}
+
+/**
+ * Get API data for a DID.
+ *
+ * @param string $did DID.
+ * @return array|WP_Error The API data array or WP_Error on failure.
+ */
+function get_api_data( $did ) {
+	$api_data = get_update_data( $did );
+	if ( is_wp_error( $api_data ) ) {
+		return $api_data;
+	}
+
+	$api_data = json_decode( json_encode( $api_data ), true );
+	$api_data['description'] = $api_data['sections']['description'];
+	$api_data['short_description'] = substr( strip_tags( trim( $api_data['description'] ) ), 0, 147 ) . '...';
+	$api_data['last_updated'] ??= 0;
+	$api_data['num_ratings'] ??= 0;
+	$api_data['rating'] ??= 0;
+	$api_data['active_installs'] ??= 0;
+
+	// Avoid a double-hashed slug.
+	$hash_suffix = '-' . get_did_hash( $did );
+	if ( str_ends_with( $api_data['slug'], $hash_suffix ) ) {
+		$api_data['slug'] = str_replace( $hash_suffix, '', $api_data['slug'] );
+	}
+
+	return $api_data;
+}
+
+/**
+ * Get a plugin's information when a DID is supplied.
+ *
+ * @param mixed    $result The result of the plugins_api call.
+ * @param string   $action The action being performed.
+ * @param stdClass $args   The arguments passed to the plugins_api call.
+ * @return stdClass|WP_Error The plugin information object or WP_Error.
+ */
+function get_plugin_information( $result, $action, $args ) {
+	if ( $action !== 'plugin_information' || empty( $args->slug ) ) {
+		return $result;
+	}
+
+	$did = sanitize_text_field( $args->slug );
+	if ( ! str_starts_with( $did, 'did:plc:' ) || strlen( $did ) !== 32 ) {
+		return $result;
+	}
+
+	$api_data = get_api_data( $did );
+	if ( is_wp_error( $api_data ) ) {
+		return $result;
+	}
+
+	return (object) $api_data;
 }
 
 // phpcs:enable
