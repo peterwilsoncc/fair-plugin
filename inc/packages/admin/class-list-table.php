@@ -14,6 +14,28 @@ use WP_Plugin_Install_List_Table;
  * Custom plugin installer list table.
  */
 class List_Table extends WP_Plugin_Install_List_Table {
+
+	/**
+	 * Replace Add Plugins message with ours.
+	 *
+	 * @since WordPress 6.9.0
+	 * @return void
+	 */
+	public function views() {
+		ob_start();
+		parent::views();
+		$views = ob_get_clean();
+
+		echo wp_kses_post(
+			str_replace(
+    			// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- Intentional use of Core's text domain.
+				[ __( 'https://wordpress.org/plugins/' ), __( 'WordPress Plugin Directory' ) ],
+				[ esc_url( 'https://fair.pm/packages/plugins/' ), __( 'FAIR Package Directory', 'fair' ) ],
+				$views
+			)
+		);
+	}
+
 	/**
 	 * Generates the list table rows.
 	 *
