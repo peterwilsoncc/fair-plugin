@@ -41,8 +41,7 @@ function bootstrap() {
 	add_filter( 'wp_list_table_class_name', __NAMESPACE__ . '\\maybe_override_list_table' );
 
 	// Needed for pre WordPress 6.9 compatibility.
-	global $wp_version;
-	if ( version_compare( $wp_version, '6.9-beta1', '<' ) ) {
+	if ( ! is_wp_version_compatible( '6.9' ) ) {
 		add_action( 'install_plugins_featured', __NAMESPACE__ . '\\replace_featured_message' );
 		add_action( 'admin_init', fn() => remove_action( 'install_plugins_featured', 'install_dashboard' ) );
 	}
@@ -87,14 +86,18 @@ function replace_featured_message() {
 	\display_plugins_table();
 	$views = ob_get_clean();
 
-	echo wp_kses_post(
-		str_replace(
-			// phpcs:ignore WordPress.WP.I18n.MissingArgDomain -- Intentional use of Core's text domain.
-			[ __( 'https://wordpress.org/plugins/' ), __( 'WordPress Plugin Directory' ) ],
-			[ esc_url( 'https://fair.pm/packages/plugins/' ), __( 'FAIR Package Directory', 'fair' ) ],
-			$views
-		)
-	);
+	preg_match( '|<a href="(?<url>[^"]+)">(?<text>[^>]+)<\/a>|', $views, $matches );
+	if ( ! empty( $matches['text'] ) ) {
+		$text_with_fair = str_replace( 'WordPress', 'FAIR', $matches['text'] );
+		$str = str_replace(
+			[ $matches['url'], $matches['text'] ],
+			[ __( 'https://fair.pm/packages/plugins/', 'fair' ), $text_with_fair ],
+			$matches[0]
+		);
+	}
+
+	// phpcs:ignore WordPress.Security.EscapeOutput.OutputNotEscaped -- Replacements are escaped. The previous content is direct from Core.
+	echo str_replace( $matches[0], $str, $views );
 }
 
 /**
