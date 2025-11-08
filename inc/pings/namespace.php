@@ -97,6 +97,7 @@ function handle_key_file_request( $wp ) {
 	header( 'Content-Type: text/plain' );
 	header( 'Expires: ' . gmdate( 'D, d M Y H:i:s', time() + YEAR_IN_SECONDS ) . ' GMT' );
 	header( 'Cache-Control: public, max-age=' . YEAR_IN_SECONDS );
+	header( 'X-Robots-Tag: noindex' );
 
 	// Output the key.
 	echo esc_html( $key );
