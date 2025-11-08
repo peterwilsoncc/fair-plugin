@@ -15,7 +15,7 @@ function bootstrap() {
 	add_filter( 'query_vars', __NAMESPACE__ . '\\register_query_vars' );
 	add_action( 'init', __NAMESPACE__ . '\\get_indexnow_key' );
 	add_action( 'init', __NAMESPACE__ . '\\add_key_rewrite_rule' );
-	add_action( 'template_redirect', __NAMESPACE__ . '\\handle_key_file_request' );
+	add_action( 'parse_request', __NAMESPACE__ . '\\handle_key_file_request' );
 	add_action( 'transition_post_status', __NAMESPACE__ . '\\ping_indexnow', 10, 3 );
 }
 
@@ -78,15 +78,17 @@ function add_key_rewrite_rule() {
 
 /**
  * Handle the IndexNow key file request.
+ *
+ * @param \WP $wp WordPress instance.
  */
-function handle_key_file_request() {
-	if ( ! get_query_var( 'fair_indexnow_key' ) ) {
+function handle_key_file_request( $wp ) {
+	if ( empty( $wp->query_vars['fair_indexnow_key'] ) ) {
 		return;
 	}
 
 	$key = get_indexnow_key();
-	if ( ! $key || $key !== get_query_var( 'fair_indexnow_key' ) ) {
-		$error = 'Invalid key: ' . get_query_var( 'fair_indexnow_key' );
+	if ( ! $key || $key !== $wp->query_vars['fair_indexnow_key'] ) {
+		$error = 'Invalid key: ' . $wp->query_vars['fair_indexnow_key'];
 		wp_die( esc_html( $error ), 'IndexNow Key Error', [ 'response' => 403 ] );
 		return;
 	}
